@@ -1,17 +1,26 @@
 require('dotenv').config()
 var CronJob = require('cron').CronJob;
-const {App, LogLevel} = require ('@slack/bolt');
+const {App, LogLevel, AwsLambdaReceiver} = require ('@slack/bolt');
 const {WebClient} = require ('@slack/web-api')
 
 const QUOTES = require('./citations.json');
 
+// Initialize custom AWS Lambda Receiver
+
+const awsLambdaReceiver = new AwsLambdaReceiver({
+	signingSecret: process.env.SLACK_SIGNING_SECRET,
+});
+
 // Initializing the App
 const app = new App({
 	token: process.env.SLACK_BOT_TOKEN,
-	signingSecret: process.env.SLACK_SIGNIN_SECRET,
+	receiver: awsLambdaReceiver,
+	signingSecret: process.env.SLACK_SIGNING_SECRET,
 	socketMode: true,
 	appToken: process.env.SLACK_APP_TOKEN,
-	logLevel: LogLevel.DEBUG
+	logLevel: LogLevel.DEBUG,
+	// ProcessBeforeResponse to true if using other receivers, such as ExpressReceiver for OAuth flow
+	// processBeforeResponse: true
 });
 // Initilizing client to call API methods directly
 const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
@@ -259,7 +268,13 @@ const whosComingMessage= async () => {
 
 // --------------- STARTING THE APP ---------------
 
-(async () => {
-	await app.start(process.env.PORT || 3000)
-	console.log("Bolt app is running !")
-})();
+// (async () => {
+// 	await app.start(process.env.PORT || 3000)
+// 	console.log("Bolt app is running !")
+// })();
+
+// Handle the Lambda function event
+module.exports.handler = async (event, context, callback) => {
+    const handler = await awsLambdaReceiver.start();
+    return handler(event, context, callback);
+}
