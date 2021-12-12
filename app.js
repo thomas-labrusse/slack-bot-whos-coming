@@ -25,7 +25,7 @@ const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
 
 var job = new CronJob(
 	// * * * * 1-4,7
-	"*/3 * * * *",
+	"*/2 * * * *",
 	// "*/1 * * * *",
 	function() {
 	whosComingMessage();
