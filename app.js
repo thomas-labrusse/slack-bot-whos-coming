@@ -15,10 +15,10 @@ const awsLambdaReceiver = new AwsLambdaReceiver({
 const app = new App({
 	token: process.env.SLACK_BOT_TOKEN,
 	receiver: awsLambdaReceiver,
-	signingSecret: process.env.SLACK_SIGNING_SECRET,
-	socketMode: true,
-	appToken: process.env.SLACK_APP_TOKEN,
 	logLevel: LogLevel.DEBUG,
+	// signingSecret: process.env.SLACK_SIGNING_SECRET,
+	// socketMode: true,
+	// appToken: process.env.SLACK_APP_TOKEN,
 	// ProcessBeforeResponse to true if using other receivers, such as ExpressReceiver for OAuth flow
 	// processBeforeResponse: true
 });
@@ -34,8 +34,8 @@ const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
 
 var job = new CronJob(
 	// * * * * 1-4,7
-	"*/2 * * * *",
-	// "*/1 * * * *",
+	// "*/3 * * * *",
+	"*/1 * * * *",
 	function() {
 	whosComingMessage();
 	console.log("Cron onTick function triggered");
@@ -43,7 +43,8 @@ var job = new CronJob(
 	null,
 );
 
-// job.start();
+job.start();
+console.log(job.nextDates());
 
 
 // --------------- WHO'S COMING LOGIC ---------------
@@ -74,6 +75,8 @@ const whosComingMessage= async () => {
 	try {
 	await client.chat.postMessage({
 	"channel": WHOS_COMING_CHANNEL,
+	// Find better fallback message !!!
+	"text": "fallback message",
 	"blocks": [
 		{
 			"type": "header",
@@ -111,7 +114,7 @@ const whosComingMessage= async () => {
 					},
 					"style": "primary",
 					"value": "yes-morning",
-					"action_id":"coming_button_action_id"
+					"action_id": "coming_button_action_id"
 				},
 				{
 					"type": "button",
@@ -122,7 +125,7 @@ const whosComingMessage= async () => {
 					},
 					"style": "danger",
 					"value": "no-morning",
-					"action_id":"not_coming_button_action_id"
+					"action_id": "not_coming_button_action_id"
 				}
 			]
 		},
@@ -157,7 +160,7 @@ const whosComingMessage= async () => {
 					},
 					"style": "primary",
 					"value": "yes-afternoon",
-					"action_id":"coming_button_action_id"
+					"action_id": "coming_button_action_id"
 				},
 				{
 					"type": "button",
@@ -168,7 +171,7 @@ const whosComingMessage= async () => {
 					},
 					"style": "danger",
 					"value": "no-afternoon",
-					"action_id":"not_coming_button_action_id"
+					"action_id": "not_coming_button_action_id"
 				}
 			]
 		},
@@ -190,10 +193,16 @@ const whosComingMessage= async () => {
 		console.error(error)
 	}
 
+	
+};
 
-	app.action("coming_button_action_id", async ({body, ack}) =>{
+// TEST MOVING ACTION OUTSIDE OF MESSAGE FUNCTION
+
+app.action('coming_button_action_id', async ({body, ack}) =>{
 		
 		// Acknowledge the action
+
+		console.log("REACHES HERE")
 
 		await ack();
 
@@ -225,8 +234,7 @@ const whosComingMessage= async () => {
 
 	})
 
-
-	app.action("not_coming_button_action_id", async ({body, ack}) =>{
+	app.action('not_coming_button_action_id', async ({body, ack}) =>{
 		// Acknowledge the action
 
 		await ack();
@@ -264,17 +272,18 @@ const whosComingMessage= async () => {
 		})
 
 	})
-};
+
 
 // --------------- STARTING THE APP ---------------
+
+// Handle the Lambda function event
+
+module.exports.handler = async (event, context, callback) => {
+    const handler = await awsLambdaReceiver.start();
+    return handler(event, context, callback);
+}
 
 // (async () => {
 // 	await app.start(process.env.PORT || 3000)
 // 	console.log("Bolt app is running !")
 // })();
-
-// Handle the Lambda function event
-module.exports.handler = async (event, context, callback) => {
-    const handler = await awsLambdaReceiver.start();
-    return handler(event, context, callback);
-}
