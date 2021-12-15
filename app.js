@@ -1,9 +1,6 @@
 require('dotenv').config()
-// var CronJob = require('cron').CronJob;
 const {App, LogLevel, AwsLambdaReceiver} = require ('@slack/bolt');
 const {WebClient} = require ('@slack/web-api')
-
-const QUOTES = require('./citations.json');
 
 // Initialize custom AWS Lambda Receiver
 
@@ -26,20 +23,6 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
 const TEST_CHANNEL = "C02P26U1E4D"
 const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
 
-// --------------- Cron job test ---------------
-
-// var job = new CronJob(
-// 	// * * * * 1-4,7
-// 	// "*/3 * * * *",
-// 	"*/2 * * * *",
-// 	function() {
-// 	whosComingMessage();
-// 	console.log("Cron onTick function triggered");
-// 	},
-// 	null,
-// );
-
-// job.start();
 
 // --------------- TEST PURPOSE ONLY ---------------
 
@@ -80,165 +63,14 @@ app.action('button_click', async ({ body, ack, say }) => {
   await say(`<@${body.user.id}> clicked the button`);
 });
 
-// --------------- WHO'S COMING LOGIC ---------------
-
-const whosComingMessage= async () => {
-
-	// CRON next dates
-	// console.log("Next job time:", job.nextDates().toISOString());
-
-	// displaying tomorrow date
-
-	let today = new Date();
-	let tomorrow = new Date(today);
-	tomorrow.setDate(tomorrow.getDate()+1);
-	var options = {weekday: "long", year: "numeric", month: "long", day: "numeric"}
-	let date = tomorrow.toLocaleDateString("fr-FR", options)
-
-	// picking a random motivational quote
-	function getRandomIntInclusive(min, max) {
-		min = Math.ceil(min);
-		max = Math.floor(max);
-		return Math.floor(Math.random() * (max - min +1)) + min;
-	}
-	let randomIndex = getRandomIntInclusive(0, QUOTES.length)
-
-	console.log(randomIndex);
-
-	let randomQuote = QUOTES[randomIndex].citation;
-	let quoteAuthor = QUOTES[randomIndex].author;
-
-	try {
-	await client.chat.postMessage({
-	"channel": WHOS_COMING_CHANNEL,
-	// Find better fallback message !!!
-	"text": "fallback message",
-	"blocks": [
-		{
-			"type": "header",
-			"text": {
-				"type": "plain_text",
-				"text": `:calendar:|  Tu viens au Poool le ${date} ?  |:calendar:`,
-				"emoji": true
-			}
-		},
-		{
-			"type": "section",
-			"text":
-				{
-					"type": "plain_text",
-					"text": ":sunrise: Elles/Ils y seront le matin, et toi ?",
-					"emoji": true
-				}
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": " "
-			}
-		},
-		{
-			"type": "actions",
-			"elements": [
-				{
-					"type": "button",
-					"text": {
-						"type": "plain_text",
-						"emoji": true,
-						"text": "Oui"
-					},
-					"style": "primary",
-					"value": "yes-morning",
-					"action_id": "coming_button_action_id"
-				},
-				{
-					"type": "button",
-					"text": {
-						"type": "plain_text",
-						"emoji": true,
-						"text": "Non"
-					},
-					"style": "danger",
-					"value": "no-morning",
-					"action_id": "not_coming_button_action_id"
-				}
-			]
-		},
-		{
-			"type": "divider"
-		},
-		{
-			"type": "section",
-			"text":
-				{
-					"type": "plain_text",
-					"text": ":sunny: Elles/Ils y seront l'après-midi, et toi ?",
-					"emoji": true
-				}
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": " "
-			}
-		},
-		{
-			"type": "actions",
-			"elements": [
-				{
-					"type": "button",
-					"text": {
-						"type": "plain_text",
-						"emoji": true,
-						"text": "Oui"
-					},
-					"style": "primary",
-					"value": "yes-afternoon",
-					"action_id": "coming_button_action_id"
-				},
-				{
-					"type": "button",
-					"text": {
-						"type": "plain_text",
-						"emoji": true,
-						"text": "Non"
-					},
-					"style": "danger",
-					"value": "no-afternoon",
-					"action_id": "not_coming_button_action_id"
-				}
-			]
-		},
-		{
-			"type": "divider"
-				},
-				{
-			"type": "context",
-			"elements": [
-				{
-					"type": "mrkdwn",
-					"text": `:bulb: _"${randomQuote}"_ - *${quoteAuthor}*`
-				}
-			]
-		}
-	]
-})
-	} catch (error) {
-		console.error(error)
-	}
-
-	
-};
-
 // TEST MOVING ACTION OUTSIDE OF MESSAGE FUNCTION
 
-app.action('coming_button_action_id', async ({body, ack}) =>{
+app.action('coming_button_action_id', async ({body, client, ack}) =>{
 		
 		// Acknowledge the action
 
 		console.log("REACHES HERE")
+		console.log("BODY", body)
 
 		await ack();
 
@@ -265,13 +97,14 @@ app.action('coming_button_action_id', async ({body, ack}) =>{
 		const result = await client.chat.update({
 			"channel": body.channel.id,
 			"ts": body.container.message_ts,
+			"as_user": true,
 			"text": "block updated",
 			"blocks": newBlocks,
 		})
 
 	})
 
-	app.action('not_coming_button_action_id', async ({body, ack}) =>{
+	app.action('not_coming_button_action_id', async ({body, client, ack}) =>{
 		// Acknowledge the action
 
 		await ack();
@@ -305,6 +138,7 @@ app.action('coming_button_action_id', async ({body, ack}) =>{
 		const result = await client.chat.update({
 			"channel": body.channel.id,
 			"ts": body.container.message_ts,
+			"as_user": true,
 			"text": "block updated",
 			"blocks": newBlocks,
 		})
