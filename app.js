@@ -1,5 +1,5 @@
 require('dotenv').config()
-var CronJob = require('cron').CronJob;
+// var CronJob = require('cron').CronJob;
 const {App, LogLevel, AwsLambdaReceiver} = require ('@slack/bolt');
 const {WebClient} = require ('@slack/web-api')
 
@@ -16,12 +16,8 @@ const app = new App({
 	token: process.env.SLACK_BOT_TOKEN,
 	receiver: awsLambdaReceiver,
 	logLevel: LogLevel.DEBUG,
-	// signingSecret: process.env.SLACK_SIGNING_SECRET,
-	// socketMode: true,
-	// appToken: process.env.SLACK_APP_TOKEN,
-	// ProcessBeforeResponse to true if using other receivers, such as ExpressReceiver for OAuth flow
-	// processBeforeResponse: true
 });
+
 // Initilizing client to call API methods directly
 const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
 	logLevel: LogLevel.DEBUG
@@ -32,24 +28,64 @@ const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
 
 // --------------- Cron job test ---------------
 
-var job = new CronJob(
-	// * * * * 1-4,7
-	// "*/3 * * * *",
-	"*/1 * * * *",
-	function() {
-	whosComingMessage();
-	console.log("Cron onTick function triggered");
-	},
-	null,
-);
+// var job = new CronJob(
+// 	// * * * * 1-4,7
+// 	// "*/3 * * * *",
+// 	"*/2 * * * *",
+// 	function() {
+// 	whosComingMessage();
+// 	console.log("Cron onTick function triggered");
+// 	},
+// 	null,
+// );
 
-job.start();
-console.log(job.nextDates());
+// job.start();
 
+// --------------- TEST PURPOSE ONLY ---------------
+
+// Listens to incoming messages that contain "hello"
+app.message('hello', async ({ message, say }) => {
+
+	console.log('ENV VARIABLE FROM HELLO', process.env.SLACK_BOT_TOKEN)
+	console.log('SLACK WEBHOOK', process.env.SLACK_WEBHOOK)
+	console.log('SLACK TEST', process.env.SLACK_TEST)
+	console.log('SLACK SIGNING', process.env.SLACK_SIGNING_SECRET)
+  // say() sends a message to the channel where the event was triggered
+  await say({
+    blocks: [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `Hey there <@${message.user}>!`
+        },
+        "accessory": {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Click Me"
+          },
+          "action_id": "button_click"
+        }
+      }
+    ],
+    text: `Hey there <@${message.user}>!`
+  });
+});
+
+// Listens for an action from a button click
+app.action('button_click', async ({ body, ack, say }) => {
+  await ack();
+  
+  await say(`<@${body.user.id}> clicked the button`);
+});
 
 // --------------- WHO'S COMING LOGIC ---------------
 
 const whosComingMessage= async () => {
+
+	// CRON next dates
+	// console.log("Next job time:", job.nextDates().toISOString());
 
 	// displaying tomorrow date
 
@@ -229,6 +265,7 @@ app.action('coming_button_action_id', async ({body, ack}) =>{
 		const result = await client.chat.update({
 			"channel": body.channel.id,
 			"ts": body.container.message_ts,
+			"text": "block updated",
 			"blocks": newBlocks,
 		})
 
@@ -268,9 +305,9 @@ app.action('coming_button_action_id', async ({body, ack}) =>{
 		const result = await client.chat.update({
 			"channel": body.channel.id,
 			"ts": body.container.message_ts,
+			"text": "block updated",
 			"blocks": newBlocks,
 		})
-
 	})
 
 
@@ -282,8 +319,3 @@ module.exports.handler = async (event, context, callback) => {
     const handler = await awsLambdaReceiver.start();
     return handler(event, context, callback);
 }
-
-// (async () => {
-// 	await app.start(process.env.PORT || 3000)
-// 	console.log("Bolt app is running !")
-// })();
