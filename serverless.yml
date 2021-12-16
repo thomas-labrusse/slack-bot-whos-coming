@@ -4,9 +4,13 @@ useDotenv: true
 provider:
   name: aws
   runtime: nodejs12.x
+  stage: dev
+  region: eu-west-3
+  lambdaHashingVersion: 20201221
   environment:
     SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
     SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+    SLACK_WEBHOOK: ${env:SLACK_WEBHOOK}
 functions:
   slack:
     handler: app.handler
@@ -14,5 +18,12 @@ functions:
       - http:
           path: slack/events
           method: post
+  sendmessage:
+    handler: notify.sendMessage
+    events:
+      - schedule:
+        rate:
+          - cron(0 8 ? * 2-5 *)
+          - cron(0 11 ? * 1 *)
 plugins:
   - serverless-offline
