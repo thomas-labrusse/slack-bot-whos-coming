@@ -15,8 +15,9 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
 });
 
 // ----- AUTOMATIC MESSAGE ----------
+// Trigger dates can be monitored in AWS CloudWatch / Events / Rules
 
-module.exports.automaticmessage = () => {
+module.exports.sendMessage = () => {
 
 
 	// displaying tomorrow date
