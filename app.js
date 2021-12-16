@@ -23,54 +23,11 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
 const TEST_CHANNEL = "C02P26U1E4D"
 const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
 
-
-// --------------- TEST PURPOSE ONLY ---------------
-
-// Listens to incoming messages that contain "hello"
-app.message('hello', async ({ message, say }) => {
-
-	console.log('ENV VARIABLE FROM HELLO', process.env.SLACK_BOT_TOKEN)
-	console.log('SLACK WEBHOOK', process.env.SLACK_WEBHOOK)
-	console.log('SLACK TEST', process.env.SLACK_TEST)
-	console.log('SLACK SIGNING', process.env.SLACK_SIGNING_SECRET)
-  // say() sends a message to the channel where the event was triggered
-  await say({
-    blocks: [
-      {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": `Hey there <@${message.user}>!`
-        },
-        "accessory": {
-          "type": "button",
-          "text": {
-            "type": "plain_text",
-            "text": "Click Me"
-          },
-          "action_id": "button_click"
-        }
-      }
-    ],
-    text: `Hey there <@${message.user}>!`
-  });
-});
-
-// Listens for an action from a button click
-app.action('button_click', async ({ body, ack, say }) => {
-  await ack();
-  
-  await say(`<@${body.user.id}> clicked the button`);
-});
-
-// TEST MOVING ACTION OUTSIDE OF MESSAGE FUNCTION
+// LISTENING TO USER ACTIONS ON MESSAGE
 
 app.action('coming_button_action_id', async ({body, client, ack}) =>{
 		
 		// Acknowledge the action
-
-		console.log("REACHES HERE")
-		console.log("BODY", body)
 
 		await ack();
 
@@ -143,9 +100,6 @@ app.action('coming_button_action_id', async ({body, client, ack}) =>{
 			"blocks": newBlocks,
 		})
 	})
-
-
-// --------------- STARTING THE APP ---------------
 
 // Handle the Lambda function event
 
