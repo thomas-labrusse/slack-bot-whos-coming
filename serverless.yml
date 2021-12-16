@@ -10,7 +10,6 @@ provider:
   environment:
     SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
     SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
-    SLACK_WEBHOOK: ${env:SLACK_WEBHOOK}
 functions:
   slack:
     handler: app.handler
@@ -22,8 +21,7 @@ functions:
     handler: notify.sendMessage
     events:
       - schedule:
-        rate:
-          - cron(0 8 ? * 2-5 *)
-          - cron(0 11 ? * 1 *)
+          rate:
+            - cron(0 11 ? * 1-5 *)
 plugins:
   - serverless-offline
