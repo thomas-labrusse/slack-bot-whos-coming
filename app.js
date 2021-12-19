@@ -20,9 +20,6 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
 	logLevel: LogLevel.DEBUG
 });
 
-const TEST_CHANNEL = "C02P26U1E4D"
-const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
-
 // LISTENING TO USER ACTIONS ON MESSAGE
 
 app.action('coming_button_action_id', async ({body, client, ack}) =>{
