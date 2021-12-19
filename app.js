@@ -52,7 +52,7 @@ app.action('coming_button_action_id', async ({body, client, ack}) =>{
 			"channel": body.channel.id,
 			"ts": body.container.message_ts,
 			"as_user": true,
-			"text": "block updated",
+			"text": "qui sera là ce jour là ?",
 			"blocks": newBlocks,
 		})
 
@@ -93,7 +93,7 @@ app.action('coming_button_action_id', async ({body, client, ack}) =>{
 			"channel": body.channel.id,
 			"ts": body.container.message_ts,
 			"as_user": true,
-			"text": "block updated",
+			"text": "qui sera là ce jour là ?",
 			"blocks": newBlocks,
 		})
 	})

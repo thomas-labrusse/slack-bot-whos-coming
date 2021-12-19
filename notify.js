@@ -160,6 +160,6 @@ module.exports.sendMessage = () => {
 	client.chat.postMessage({
 		"channel":WHOS_COMING_CHANNEL,
 		"blocks": data,
-		"text": "fallback text"
+		"text": `Qui sera là le ${date} ?`
 	})
 }
