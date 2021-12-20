@@ -8,6 +8,10 @@ const QUOTES = require('./citations.json');
 
 const WHOS_COMING_CHANNEL = "C02QBKTJL5A"
 
+// CRON
+// Du dimanche au jeudi à 11h du matin
+// cron(0 11 ? * 1-5 *)
+
 
 // Initilizing client to call API methods directly
 const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
