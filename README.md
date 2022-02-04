@@ -44,6 +44,6 @@ Event Subscriptions/Subscribe to bot events --> Add bot user event :
 
 ## Modifying the automatic message schedule
 
-Daily messages are sent daily using the AWS/Serverless scheduling functionnality.
+Daily messages are sent using the AWS/Serverless scheduling functionnality.
 
 To change the schedule, modify the `schedule/rate` in the `serverless.yml` file using cron syntax.
